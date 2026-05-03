@@ -1,80 +1,77 @@
 // Selecting DOM elements
-const stateInput = document.querySelector('#state-input'); 
-const searchButton = document.querySelector('#search-button');
-const alertContainer = document.querySelector('#alert-container'); 
-const errorMessageDiv = document.querySelector('#error-message');
-
-// Event Listener for the search
-searchButton.addEventListener('click', () => {
+// Add Event Listener to the button
+document.getElementById('fetch-alerts').addEventListener('click', () => {
+    const stateInput = document.getElementById('state-input');
     const stateAbbr = stateInput.value.trim().toUpperCase();
     
-    //Clear previous data and reset UI
-    clearUI();
-
-    //Basic Input Validation
-    if (stateAbbr.length !== 2) {
-        displayError("Please enter a valid 2-letter state abbreviation (e.g., MN).");
+    if (!stateAbbr) {
+        displayError("Please enter a state abbreviation.");
         return;
     }
-
+    
     fetchWeatherAlerts(stateAbbr);
 });
 
-//Fetch Alerts for a State from the API
+//Fetch Alerts for a State
 function fetchWeatherAlerts(state) {
-    const url = `https://api.weather.gov/alerts/active?area=${state}`;
+    // Clear UI before starting
+    resetUI();
 
-    fetch(url)
+    fetch(`https://api.weather.gov/alerts/active?area=${state}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error("Failed to fetch weather data. Please check the state code.");
+                throw new Error("Network response was not ok");
             }
             return response.json();
         })
         .then(data => {
-            //Display the Alerts
-            displayAlerts(data, state);
+            //Displaying the alerts
+            displayAlerts(data);
+            
+            // Clear input field on success
+            document.getElementById('state-input').value = '';
         })
-        .catch(errorObject => {
-            //Implement Error Handling
-            displayError(errorObject.message);
+        .catch(error => {
+            //Handle errors
+            displayError(error.message);
         });
 }
 
-//Display the Alerts on the Page
-function displayAlerts(data, stateName) {
-    // Access the 'features' array from the API response
-    const alerts = data.features;
-    const alertCount = alerts.length;
+// Displaying the Alerts on the Page
+ 
+function displayAlerts(data) {
+    const alertsDisplay = document.getElementById('alerts-display');
+    const alertFeatures = data.features || [];
+    
+    
+    const summaryText = `${data.title}: ${alertFeatures.length}`;
+    
+    const summary = document.createElement('h2');
+    summary.textContent = summaryText;
+    alertsDisplay.appendChild(summary);
 
-    // Create Summary Message
-    const summary = document.createElement('h3');
-    summary.textContent = `Current watches, warnings, and advisories for ${stateName}: ${alertCount}`;
-    alertContainer.appendChild(summary);
-
-    // Create a list for headlines
-    const ul = document.createElement('ul');
-
-    alerts.forEach(alert => {
-        const li = document.createElement('li');
-        // Navigate the nested object: properties -> headline
-        li.textContent = alert.properties.headline;
-        ul.appendChild(li);
+    // List each alert headline
+    alertFeatures.forEach(feature => {
+        const headline = document.createElement('p');
+        headline.textContent = feature.properties.headline;
+        alertsDisplay.appendChild(headline);
     });
-
-    alertContainer.appendChild(ul);
 }
 
-//Display Error Messages
+// Implement Error Handling
+ 
 function displayError(message) {
-    errorMessageDiv.textContent = message;
-    errorMessageDiv.style.display = 'block'; // Ensure it's visible
+    const errorMessage = document.getElementById('error-message');
+    errorMessage.textContent = message;
+    errorMessage.classList.remove('hidden');
 }
 
-//Clear and Reset the UI
-function clearUI() {
-    stateInput.value = ''; 
-    alertContainer.innerHTML = ''; 
-    errorMessageDiv.textContent = ''; 
-    errorMessageDiv.style.display = 'none'; 
+// clear the UI before starting a new fetch
+function resetUI() {
+    const alertsDisplay = document.getElementById('alerts-display');
+    const errorMessage = document.getElementById('error-message');
+    
+    alertsDisplay.innerHTML = '';
+    errorMessage.textContent = '';
+    errorMessage.classList.add('hidden');
 }
