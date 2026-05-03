@@ -1,8 +1,4 @@
-// index.js
-const weatherApi = "https://api.weather.gov/alerts/active?area="
-
-// Your code here!
-// Select DOM elements
+// Selecting DOM elements
 const stateInput = document.querySelector('#state-input'); 
 const searchButton = document.querySelector('#search-button');
 const alertContainer = document.querySelector('#alert-container'); 
