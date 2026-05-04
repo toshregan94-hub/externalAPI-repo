@@ -1,57 +1,63 @@
-// index.js
-const weatherApi = "https://api.weather.gov/alerts/active?area="
+const weatherApi = "https://api.weather.gov/alerts/active?area=";
 
 const button = document.getElementById('fetch-alerts');
 const input = document.getElementById('state-input');
 const alertsDisplay = document.getElementById('alerts-display');
 const errorMessage = document.getElementById('error-message');
 
-//add event listener
-button.addEventListener('click', function(){
-    const stateAbbr = input.value
+button.addEventListener('click', function() {
+    const stateAbbr = input.value.toUpperCase(); // Ensure uppercase for the API call
 
-    //display meaningful error message incase of empty input or invalid input
+    // Clear the input field immediately after clicking 
+    input.value = "";
+
+    // Validating input
     if (stateAbbr === "") {
-    errorMessage.textContent = "Please enter a state abbreviation"
-    errorMessage.classList.remove('hidden')
-    return  // stops the fetch from happening
-  }
+        displayError("Please enter a state abbreviation");
+        return;
+    }
 
     if (stateAbbr.length !== 2) {
-    errorMessage.textContent = "Please enter a valid 2 letter state abbreviation"
-    errorMessage.classList.remove('hidden')
-    return  // prevents the fetch from occurring
-  }
-
-fetch(weatherApi + stateAbbr)
-  .then(response => response.json())
-  .then(data => {
-    //check if input is valid first
-    if (!data.features) {
-        throw new Error("Invalid State Abbreviation")
+        displayError("Please enter a valid 2 letter state abbreviation");
+        return;
     }
-    //clear previous results
-    alertsDisplay.textContent = ""
-    errorMessage.textContent = "";
-    errorMessage.classList.add('hidden');
-    //clear input 
-    input.value = "";
-    //display summary
-  alertsDisplay.textContent = data.title + ': ' + data.features.length
-    //display each alert
-  data.features.forEach(alert =>{
-    // creation of the element.
-    const p = document.createElement('p'); 
-    // Adding the text content to the element.
-    p.textContent = alert.properties.headline; 
-    // Adding p to the alertsDisplay.
-    alertsDisplay.appendChild(p) 
-  })
-})
-   .catch(error => {
-    errorMessage.textContent = error.message
-    errorMessage.classList.remove('hidden')
-  })
-})
 
+    // Performing the Fetch
+    fetch(weatherApi + stateAbbr)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Invalid State Abbreviation");
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Clearing previous errors and results 
+            errorMessage.textContent = "";
+            errorMessage.classList.add('hidden');
+            alertsDisplay.innerHTML = ""; 
 
+            // Display Summary 
+            
+            const summary = document.createElement('h2');
+            summary.textContent = data.title + ': ' + data.features.length;
+            alertsDisplay.appendChild(summary);
+
+            // Displaying Each Alert
+            data.features.forEach(alert => {
+                const p = document.createElement('p');
+                p.textContent = alert.properties.headline;
+                alertsDisplay.appendChild(p);
+            });
+        })
+        .catch(error => {
+            // Display error message on failure
+            displayError(error.message);
+        });
+});
+
+// Helper function to handle error display logic
+function displayError(message) {
+    alertsDisplay.textContent = ""; 
+    errorMessage.textContent = message;
+    errorMessage.classList.remove('hidden');
+}

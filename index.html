@@ -6,21 +6,21 @@
     <title>Weather Alerts App</title>
 </head>
 <body>
-
     <h1>Active Weather Alerts</h1>
     
     <div>
         <label for="state-input">Enter State Abbreviation:</label>
         
-        <input type="text" id="state-input" placeholder="Please enter a state abbreviation">
-           
-        
+        <input type="text" id="state-input" placeholder="Enter state abbreviation" maxlength="2">
+       
         <button id="fetch-alerts">Get Weather Alerts</button>
     </div>
 
+    
+    <div id="error-message" class="hidden" style="color: red;"></div>
 
-    <div id="error-message" class="hidden"></div>
     <div id="alerts-display"></div>
+
     <script src="index.js"></script>
 </body>
 </html>
