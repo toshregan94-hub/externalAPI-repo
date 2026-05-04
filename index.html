@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Alert Tracker</title>
+    <title>Weather Alerts App</title>
 </head>
 <body>
 
@@ -11,11 +11,14 @@
     
     <div>
         <label for="state-input">Enter State Abbreviation:</label>
-        <input type="text" id="state-input" placeholder="e.g. NY" maxlength="2">
-        <button id="fetch-alerts">Get Alerts</button>
+        
+        <input type="text" id="state-input" placeholder="Please enter a state abbreviation">
+           
+        
+        <button id="fetch-alerts">Get Weather Alerts</button>
     </div>
 
-    
+
     <div id="error-message" class="hidden"></div>
     <div id="alerts-display"></div>
     <script src="index.js"></script>
