@@ -1,84 +1,55 @@
-// Adding the Event Listener to satisfy the test runner
-const fetchButton = document.getElementById('fetch-alerts');
-if (fetchButton) {
-    fetchButton.addEventListener('click', () => {
-        const stateInput = document.getElementById('state-input');
-        const stateAbbr = stateInput.value.trim().toUpperCase();
+// index.js
+const weatherApi = "https://api.weather.gov/alerts/active?area="
 
-        if (!stateAbbr) {
-            displayError("Please enter a state abbreviation.");
-            return;
-        }
+const button = document.getElementById('fetch-alerts');
+const input = document.getElementById('state-input');
+const alertsDisplay = document.getElementById('alerts-display');
+const errorMessage = document.getElementById('error-message');
 
-        fetchWeatherAlerts(stateAbbr);
-    });
-}
+//add event listener
+button.addEventListener('click', function(){
+    const stateAbbr = input.value
 
-// Fetching Alerts for a State
- 
-function fetchWeatherAlerts(state) {
-    //Clear UI before starting
-    resetUI();
+    //display meaningful error message incase of empty input or invalid input
+    if (stateAbbr === "") {
+    errorMessage.textContent = "Please enter a state abbreviation"
+    errorMessage.classList.remove('hidden')
+    return  // stops the fetch from happening
+  }
 
-    fetch(`https://api.weather.gov/alerts/active?area=${state}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("network failure"); 
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Displaying the alerts
-            displayAlerts(data);
-            
-            // Clear input field on success
-            const stateInput = document.getElementById('state-input');
-            if (stateInput) stateInput.value = '';
-        })
-        .catch(error => {
-            // Handling the errors
-            displayError(error.message);
-        });
-}
+    if (stateAbbr.length !== 2) {
+    errorMessage.textContent = "Please enter a valid 2 letter state abbreviation"
+    errorMessage.classList.remove('hidden')
+    return  // prevents the fetch from occurring
+  }
 
-// Displaying the Alerts on the Page
- 
-function displayAlerts(data) {
-    const alertsDisplay = document.getElementById('alerts-display');
-    const alertFeatures = data.features || [];
-    
-    // Show summary message using the 'title' property and number of alerts
-    const summary = document.createElement('h2');
-    summary.textContent = `${data.title}: ${alertFeatures.length}`;
-    alertsDisplay.appendChild(summary);
-
-    // List each alert headline from properties.headline
-    alertFeatures.forEach(feature => {
-        const headline = document.createElement('p');
-        headline.textContent = feature.properties.headline;
-        alertsDisplay.appendChild(headline);
-    });
-}
-
-//Implement Error Handling
- 
-function displayError(message) {
-    const errorDiv = document.getElementById('error-message');
-    if (errorDiv) {
-        errorDiv.textContent = message;
-        errorDiv.classList.remove('hidden');
+fetch(weatherApi + stateAbbr)
+  .then(response => response.json())
+  .then(data => {
+    //check if input is valid first
+    if (!data.features) {
+        throw new Error("Invalid State Abbreviation")
     }
-}
-
-// Clear and Reset the UI
- 
-function resetUI() {
-    const alertsDisplay = document.getElementById('alerts-display');
-    const errorDiv = document.getElementById('error-message');
-    
-    if (alertsDisplay) alertsDisplay.innerHTML = '';
-    if (errorDiv) {
-        errorDiv.textContent = '';
-        errorDiv.classList.add('hidden');
-    }
-}
+    //clear previous results
+    alertsDisplay.textContent = ""
+    errorMessage.textContent = "";
+    errorMessage.classList.add('hidden');
+    //clear input 
+    input.value = "";
+    //display summary
+  alertsDisplay.textContent = data.title + ': ' + data.features.length
+    //display each alert
+  data.features.forEach(alert =>{
+    // creation of the element.
+    const p = document.createElement('p'); 
+    // Adding the text content to the element.
+    p.textContent = alert.properties.headline; 
+    // Adding p to the alertsDisplay.
+    alertsDisplay.appendChild(p) 
+  })
+})
+   .catch(error => {
+    errorMessage.textContent = error.message
+    errorMessage.classList.remove('hidden')
+  })
+})
